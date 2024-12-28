@@ -83,7 +83,7 @@ class FourierImageFittingModel(nn.Module):
 
 class FourierImageLearningScene(Scene):
     def construct(self):
-        x, y = get_image_data("images/curly_hair.png")
+        x, y = get_image_data("images/skyline.png")
         y = y.unsqueeze(dim=1)
 
         model = FourierImageFittingModel(fourier_order=16)
