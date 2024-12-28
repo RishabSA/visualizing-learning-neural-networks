@@ -34,6 +34,11 @@ def generate_smile_data(num_points=1000):
     return torch.tensor(X, dtype=torch.float32), torch.tensor(Y, dtype=torch.float32)
 
 
+class NormalizedTanh(nn.Module):
+    def forward(self, x):
+        return (torch.tanh(x) + 1) / 2
+
+
 class SmileFittingModel(nn.Module):
     def __init__(self, input_shape=2, hidden_shape=256, output_shape=1):
         super().__init__()
@@ -45,7 +50,7 @@ class SmileFittingModel(nn.Module):
             nn.Linear(hidden_shape, hidden_shape),
             nn.LeakyReLU(),
             nn.Linear(hidden_shape, output_shape),
-            nn.Sigmoid(),
+            NormalizedTanh(),
         )
 
     def forward(self, x):

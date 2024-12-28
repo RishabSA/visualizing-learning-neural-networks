@@ -59,7 +59,7 @@ class CurveFittingAnimation(Scene):
         self.add(axes, scatter_points, line_graph)
 
         # Training Loop
-        epochs = 1000
+        epochs = 750
         for epoch in range(epochs):
             model.train()
             y_pred = model(x)
@@ -68,7 +68,7 @@ class CurveFittingAnimation(Scene):
             loss.backward()
             optimizer.step()
 
-            if epoch % 1 == 0:
+            if epoch % 2 == 0:
                 model.eval()
                 with torch.no_grad():
                     updated_preds = model(x).detach().numpy()
@@ -78,7 +78,7 @@ class CurveFittingAnimation(Scene):
                     add_vertex_dots=False,
                     line_color=RED,
                 )
-                self.play(Transform(line_graph, new_graph), run_time=0.1)
+                self.play(Transform(line_graph, new_graph), run_time=0.02)
 
         # Final Display
         self.wait()
