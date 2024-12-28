@@ -30,16 +30,26 @@ class NormalizedTanh(nn.Module):
         return (torch.tanh(x) + 1) / 2
 
 
-class ImageFittingModel(nn.Module):
-    def __init__(self, input_shape=2, hidden_shape=128, output_shape=1):
+class NNFittingModel(nn.Module):
+    def __init__(self, input_shape=1, hidden_shape=128, output_shape=1):
         super().__init__()
         self.layers = nn.Sequential(
             nn.Linear(input_shape, hidden_shape),
-            nn.LeakyReLU(),
+            nn.ReLU(),
             nn.Linear(hidden_shape, hidden_shape),
-            nn.LeakyReLU(),
+            nn.ReLU(),
             nn.Linear(hidden_shape, hidden_shape),
-            nn.LeakyReLU(),
+            nn.ReLU(),
+            nn.Linear(hidden_shape, hidden_shape),
+            nn.ReLU(),
+            nn.Linear(hidden_shape, hidden_shape),
+            nn.ReLU(),
+            nn.Linear(hidden_shape, hidden_shape),
+            nn.ReLU(),
+            nn.Linear(hidden_shape, hidden_shape),
+            nn.ReLU(),
+            nn.Linear(hidden_shape, hidden_shape),
+            nn.ReLU(),
             nn.Linear(hidden_shape, output_shape),
             NormalizedTanh(),
         )
@@ -48,12 +58,35 @@ class ImageFittingModel(nn.Module):
         return self.layers(x)
 
 
-class ImageLearningScene(Scene):
+class FourierImageFittingModel(nn.Module):
+    def __init__(
+        self, fourier_order=16, input_shape=2, hidden_shape=128, output_shape=1
+    ):
+        super().__init__()
+        self.fourier_order = fourier_order
+        input_shape = input_shape * 2 * fourier_order + input_shape
+        self.inner_model = NNFittingModel(
+            input_shape=input_shape,
+            hidden_shape=hidden_shape,
+            output_shape=output_shape,
+        )
+        self.orders = torch.arange(1, fourier_order + 1).float()
+
+    def forward(self, x):
+        x = x.unsqueeze(-1)
+        fourier_features = torch.cat(
+            [torch.sin(self.orders * x), torch.cos(self.orders * x), x], dim=-1
+        )
+        fourier_features = fourier_features.view(x.shape[0], -1)
+        return self.inner_model(fourier_features)
+
+
+class FourierImageLearningScene(Scene):
     def construct(self):
         x, y = get_image_data("images/curly_hair.png")
         y = y.unsqueeze(dim=1)
 
-        model = ImageFittingModel()
+        model = FourierImageFittingModel(fourier_order=16)
         loss_fn = nn.BCELoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 

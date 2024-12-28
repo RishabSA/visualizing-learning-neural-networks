@@ -11,15 +11,25 @@ y = torch.sin(2 * x) - torch.cos(3 * x)
 
 
 class CurveFittingModel(nn.Module):
-    def __init__(self, input_shape=1, hidden_shape=256, output_shape=1):
+    def __init__(self, input_shape=1, hidden_shape=128, output_shape=1):
         super().__init__()
         self.layers = nn.Sequential(
             nn.Linear(input_shape, hidden_shape),
-            nn.LeakyReLU(),
+            nn.ReLU(),
             nn.Linear(hidden_shape, hidden_shape),
-            nn.LeakyReLU(),
+            nn.ReLU(),
             nn.Linear(hidden_shape, hidden_shape),
-            nn.LeakyReLU(),
+            nn.ReLU(),
+            nn.Linear(hidden_shape, hidden_shape),
+            nn.ReLU(),
+            nn.Linear(hidden_shape, hidden_shape),
+            nn.ReLU(),
+            nn.Linear(hidden_shape, hidden_shape),
+            nn.ReLU(),
+            nn.Linear(hidden_shape, hidden_shape),
+            nn.ReLU(),
+            nn.Linear(hidden_shape, hidden_shape),
+            nn.ReLU(),
             nn.Linear(hidden_shape, output_shape),
         )
 
@@ -27,9 +37,28 @@ class CurveFittingModel(nn.Module):
         return self.layers(x)
 
 
-class CurveFittingAnimation(Scene):
+class TaylorNNCurveFitting(nn.Module):
+    def __init__(self, taylor_order=4, input_shape=1, hidden_shape=128, output_shape=1):
+        super().__init__()
+        self.taylor_order = taylor_order
+        input_shape = input_shape * taylor_order
+        self.inner_model = CurveFittingModel(
+            input_shape=input_shape,
+            hidden_shape=hidden_shape,
+            output_shape=output_shape,
+        )
+        self.orders = torch.arange(1, taylor_order + 1).float()
+
+    def forward(self, x):
+        x = x.unsqueeze(-1)
+        taylor_features = torch.pow(x, self.orders)
+        taylor_features = taylor_features.view(x.shape[0], -1)
+        return self.inner_model(taylor_features)
+
+
+class TaylorCurveFittingAnimation(Scene):
     def construct(self):
-        model = CurveFittingModel()
+        model = TaylorNNCurveFitting(fourier_order=16)
         loss_fn = nn.MSELoss()
         optimizer = optim.Adam(params=model.parameters(), lr=0.001)
 
@@ -59,7 +88,7 @@ class CurveFittingAnimation(Scene):
         self.add(axes, scatter_points, line_graph)
 
         # Training Loop
-        epochs = 750
+        epochs = 500
         for epoch in range(epochs):
             model.train()
             y_pred = model(x)
@@ -68,7 +97,7 @@ class CurveFittingAnimation(Scene):
             loss.backward()
             optimizer.step()
 
-            if epoch % 2 == 0:
+            if epoch % 1 == 0:
                 model.eval()
                 with torch.no_grad():
                     updated_preds = model(x).detach().numpy()
