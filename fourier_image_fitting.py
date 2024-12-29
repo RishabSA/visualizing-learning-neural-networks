@@ -83,7 +83,7 @@ class FourierImageFittingModel(nn.Module):
 
 class FourierImageLearningScene(Scene):
     def construct(self):
-        x, y = get_image_data("images/skyline.png")
+        x, y = get_image_data("images/curly_hair.png")
         y = y.unsqueeze(dim=1)
 
         model = FourierImageFittingModel(fourier_order=16)
@@ -91,8 +91,8 @@ class FourierImageLearningScene(Scene):
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
         grid_size = 128
-        x_test = np.linspace(-1, 1, grid_size)
-        y_test = np.linspace(-1, 1, grid_size)
+        x_test = np.linspace(0, 1, grid_size)
+        y_test = np.linspace(0, 1, grid_size)
         grid = np.array([[xi, yi] for xi in x_test for yi in y_test])
         grid_tensor = torch.tensor(grid, dtype=torch.float32)
 
@@ -132,7 +132,9 @@ class FourierImageLearningScene(Scene):
                 square = Square(
                     side_length=square_size, color=WHITE, fill_opacity=1, stroke_width=0
                 )
-                square.move_to(np.array([i * square_size - 1, j * square_size - 1, 0]))
+                square.move_to(
+                    np.array([i * square_size - 2.5, j * square_size - 2.5, 0])
+                )
                 heatmap_squares.add(square)
 
         heatmap_squares.move_to(ORIGIN)

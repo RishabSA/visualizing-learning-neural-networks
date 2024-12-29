@@ -87,8 +87,8 @@ class TaylorImageLearningScene(Scene):
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
         grid_size = 128
-        x_test = np.linspace(-1, 1, grid_size)
-        y_test = np.linspace(-1, 1, grid_size)
+        x_test = np.linspace(0, 1, grid_size)
+        y_test = np.linspace(0, 1, grid_size)
         grid = np.array([[xi, yi] for xi in x_test for yi in y_test])
         grid_tensor = torch.tensor(grid, dtype=torch.float32)
 
@@ -128,7 +128,9 @@ class TaylorImageLearningScene(Scene):
                 square = Square(
                     side_length=square_size, color=WHITE, fill_opacity=1, stroke_width=0
                 )
-                square.move_to(np.array([i * square_size - 1, j * square_size - 1, 0]))
+                square.move_to(
+                    np.array([i * square_size - 2.5, j * square_size - 2.5, 0])
+                )
                 heatmap_squares.add(square)
 
         heatmap_squares.move_to(ORIGIN)
